@@ -87,7 +87,9 @@ export default function PromotorEnviarPage() {
       formData.append("industria_id", produto.industria_id);
       formData.append("estoque_disponivel", estoque);
       formData.append("capture_source", "in_app_camera");
+      // Horário da captura (não do envio) — validado no servidor com Date.now()
       formData.append("captured_at_client", capturedAt.toISOString());
+      formData.append("submitted_at_client", new Date().toISOString());
       if (observacoes) formData.append("observacoes", observacoes);
 
       const res = await fetch("/api/upload/direct", {

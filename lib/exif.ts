@@ -1,5 +1,5 @@
 import exifr from "exifr";
-import { isSameDayBrazil, nowInBrazil } from "./dates";
+import { isSameDayBrazil } from "./dates";
 
 export type CaptureSource = "in_app_camera" | "file";
 
@@ -82,15 +82,15 @@ function validateInAppCapture(capturedAtClient: string): ExifValidationResult {
     };
   }
 
-  const now = nowInBrazil();
+  // Usar instante UTC (Date.now) — toZonedTime distorce getTime() no servidor Vercel
   const diffMinutes =
-    Math.abs(now.getTime() - capturedAt.getTime()) / (1000 * 60);
+    Math.abs(Date.now() - capturedAt.getTime()) / (1000 * 60);
 
   if (diffMinutes > MAX_MINUTES_AFTER_CAPTURE) {
     return {
       valid: false,
       capturedAt,
-      error: `Envie a foto em até ${MAX_MINUTES_AFTER_CAPTURE} minutos após tirá-la.`,
+      error: `Envie a foto em até ${MAX_MINUTES_AFTER_CAPTURE} minutos após tirá-la (aguarde ${Math.round(diffMinutes)} min).`,
     };
   }
 
@@ -100,7 +100,8 @@ function validateInAppCapture(capturedAtClient: string): ExifValidationResult {
     raw: {
       source: "in_app_camera",
       captured_at_client: capturedAtClient,
-      validated_at: now.toISOString(),
+      validated_at: new Date().toISOString(),
+      diff_minutes: Math.round(diffMinutes * 10) / 10,
     },
   };
 }
